@@ -24,7 +24,6 @@ public class EmployeePersonControllerTest {
 
     @Test
     void whenGetEmployee() {
-        // Заглушка для ответа от RestTemplate
         ResponseEntity<List<Person>> responseEntity = new ResponseEntity<>(List.of(
                 new Person(1, "person1", "person1"),
                 new Person(2, "person2", "person2")
@@ -46,12 +45,9 @@ public class EmployeePersonControllerTest {
 
     @Test
     void whenGetPersonByIdThenOk() {
-        // Заглушка для ответа от RestTemplate
         ResponseEntity<Person> responseEntity = new ResponseEntity<>(
                 new Person(1, "person1", "password1"),
                 HttpStatus.OK);
-
-        // Мокирование RestTemplate не требуется, используем реальный объект
         Mockito.when(restTemplate.exchange(
                 "http://localhost:8080/person/1",
                 HttpMethod.GET,
@@ -61,13 +57,12 @@ public class EmployeePersonControllerTest {
 
         ResponseEntity<Person> resp = empController.getPersonById(1, "token");
         assertThat(resp.getStatusCode(), is(HttpStatus.OK));
-        assertThat(resp.getBody().getLogin(), is("person1")); // Замените на фактическое ожидаемое значение
-        assertThat(resp.getBody().getPassword(), is("password1")); // Замените на фактическое ожидаемое значение
+        assertThat(resp.getBody().getLogin(), is("person1"));
+        assertThat(resp.getBody().getPassword(), is("password1"));
     }
 
     @Test
     void whenGetPersonByIdThenNotFound() {
-        // Мокирование RestTemplate не требуется, используем реальный объект
         Mockito.when(restTemplate.exchange(
                 "http://localhost:8080/person/1",
                 HttpMethod.GET,
@@ -84,7 +79,6 @@ public class EmployeePersonControllerTest {
 
     @Test
     void whenCreatePerson() {
-        // Заглушка для ответа от RestTemplate
         Person newPerson = new Person("person1", "password1");
         Mockito.when(restTemplate.postForObject(
                 "http://localhost:8080/person/sign-up",
