@@ -18,15 +18,15 @@ import java.util.Map;
 
 public class JWTAuthenticationServlet extends HttpServlet {
 
-    private static final String SECRET = "yourSecretKey"; // Ваш секретный ключ
-    private static final long EXPIRATION_TIME = 864_000_000; // Время жизни токена (например, 10 дней)
+    private static final String SECRET = "yourSecretKey"; 
+    private static final long EXPIRATION_TIME = 864_000_000; 
     public static final String TOKEN_PREFIX = "Bearer ";
     public static final String HEADER_STRING = "Authorization";
 
-    private final Map<String, String> userStore = new HashMap<>(); // Простой "хранилище" пользователей
+    private final Map<String, String> userStore = new HashMap<>(); 
 
     public JWTAuthenticationServlet() {
-        userStore.put("user", "password"); // Пример пользователя
+        userStore.put("user", "password");
     }
 
     @Override
