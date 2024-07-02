@@ -13,11 +13,14 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
+import java.util.Optional;
+
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -50,7 +53,7 @@ class PersonControllerTest {
 
     @Test
     void whenFindById() throws Exception {
-        Mockito.when(store.findById(1)).thenReturn(null);
+        when(store.findById(1)).thenReturn(Optional.empty());
 
         mockMvc.perform(get("/person/1"))
                 .andDo(print())
@@ -61,7 +64,8 @@ class PersonControllerTest {
     @Test
     void whenCreate() throws Exception {
         Person person = new Person("user", "root");
-        Mockito.when(encoder.encode(anyString())).thenReturn("encodedPassword");
+        when(encoder.encode(anyString())).thenReturn("encodedPassword");
+        when(store.save(any())).thenReturn(person);
 
         mockMvc.perform(post("/person/sign-up")
                 .content("{\"login\":\"user\",\"password\":\"root\"}")
@@ -78,7 +82,7 @@ class PersonControllerTest {
     @Test
     void whenUpdate() throws Exception {
         Person person = new Person(1, "user", "root");
-        Mockito.when(store.save(any())).thenReturn(person);
+        when(store.save(any())).thenReturn(person);
 
         mockMvc.perform(put("/person/")
                 .content("{\"id\":1,\"login\":\"user\",\"password\":\"root\"}")
