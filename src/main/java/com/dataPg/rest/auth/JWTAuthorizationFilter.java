@@ -13,7 +13,7 @@ import java.util.List;
 
 public class JWTAuthorizationFilter implements Filter {
 
-    private static final String SECRET = "yourSecretKey"; // Ваш секретный ключ
+    private static final String SECRET = "yourSecretKey"; 
     private static final String TOKEN_PREFIX = "Bearer ";
     private static final String HEADER_STRING = "Authorization";
 
@@ -41,7 +41,6 @@ public class JWTAuthorizationFilter implements Filter {
         String user = getAuthentication(req);
 
         if (user != null) {
-            // Устанавливаем пользователя в сессию или контекст безопасности, если необходимо
             HttpSession session = req.getSession();
             session.setAttribute("user", user);
         }
@@ -52,7 +51,6 @@ public class JWTAuthorizationFilter implements Filter {
     private String getAuthentication(HttpServletRequest request) {
         String token = request.getHeader(HEADER_STRING);
         if (token != null) {
-            // Парсим токен
             return JWT.require(Algorithm.HMAC512(SECRET.getBytes()))
                     .build()
                     .verify(token.replace(TOKEN_PREFIX, ""))
@@ -63,6 +61,5 @@ public class JWTAuthorizationFilter implements Filter {
 
     @Override
     public void destroy() {
-        // Очистка, если необходимо
     }
 }
