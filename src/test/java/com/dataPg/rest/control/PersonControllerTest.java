@@ -1,43 +1,47 @@
-package com.dataPg.rest.control;
-
-import com.dataPg.rest.RestApplication;
-import org.junit.jupiter.api.Test;
-import org.mockito.ArgumentCaptor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
-import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.http.MediaType;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
-import org.springframework.security.test.context.support.WithMockUser;
-import org.springframework.test.web.servlet.MockMvc;
 import com.dataPg.rest.model.Person;
 import com.dataPg.rest.repository.PersonRepository;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.Mockito;
+import org.mockito.MockitoAnnotations;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.mockito.ArgumentMatchers.*;
 import static org.mockito.Mockito.verify;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
-
-@SpringBootTest(classes = RestApplication.class)
-@AutoConfigureMockMvc
 class PersonControllerTest {
 
-    @MockBean
-    private PersonRepository store;
-
-    @Autowired
     private MockMvc mockMvc;
 
-    @Autowired
+    @Mock
+    private PersonRepository store;
+
+    @Mock
     private BCryptPasswordEncoder encoder;
 
+    @InjectMocks
+    private PersonController personController;
+
+    @BeforeEach
+    void setup() {
+        MockitoAnnotations.openMocks(this);
+        mockMvc = MockMvcBuilders.standaloneSetup(personController).build();
+    }
+
     @Test
-    @WithMockUser
     void whenFindAll() throws Exception {
         mockMvc.perform(get("/person/"))
                 .andDo(print())
@@ -45,8 +49,9 @@ class PersonControllerTest {
     }
 
     @Test
-    @WithMockUser
     void whenFindById() throws Exception {
+        Mockito.when(store.findById(1)).thenReturn(null);
+
         mockMvc.perform(get("/person/1"))
                 .andDo(print())
                 .andExpect(status().isNotFound())
@@ -54,22 +59,27 @@ class PersonControllerTest {
     }
 
     @Test
-    @WithMockUser
     void whenCreate() throws Exception {
+        Person person = new Person("user", "root");
+        Mockito.when(encoder.encode(anyString())).thenReturn("encodedPassword");
+
         mockMvc.perform(post("/person/sign-up")
                 .content("{\"login\":\"user\",\"password\":\"root\"}")
                 .contentType(MediaType.APPLICATION_JSON))
                 .andDo(print())
                 .andExpect(status().isCreated());
+
         ArgumentCaptor<Person> argument = ArgumentCaptor.forClass(Person.class);
         verify(store).save(argument.capture());
         assertThat(argument.getValue().getLogin(), is("user"));
-        assertTrue(encoder.matches("root", argument.getValue().getPassword()));
+        assertThat(argument.getValue().getPassword(), is("encodedPassword"));
     }
 
     @Test
-    @WithMockUser
     void whenUpdate() throws Exception {
+        Person person = new Person(1, "user", "root");
+        Mockito.when(store.save(any())).thenReturn(person);
+
         mockMvc.perform(put("/person/")
                 .content("{\"id\":1,\"login\":\"user\",\"password\":\"root\"}")
                 .contentType(MediaType.APPLICATION_JSON))
@@ -78,7 +88,6 @@ class PersonControllerTest {
     }
 
     @Test
-    @WithMockUser
     void whenDelete() throws Exception {
         mockMvc.perform(delete("/person/1"))
                 .andDo(print())
